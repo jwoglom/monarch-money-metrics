@@ -112,26 +112,32 @@ def set_transactions_summary_metrics(outer: dict):
 monarch_cash_flow_sum_by_category = Gauge('monarch_cash_flow_sum_by_category', 'Cash flow sum by category', ['category', 'group_type'])
 
 def set_cash_flow_metrics(outer: dict):
+    cat_to_group_type = {}
     by_cat = outer.get('byCategory')
     for item in by_cat:
         name = (item.get('groupBy',{}).get('category',{}) or {}).get('name','')
         group_type = ((item.get('groupBy',{}).get('category',{}) or {}).get('group',{}) or {}).get('type', '')
         sum_amt = (item.get('summary', {}) or {}).get('sum', 0)
+
         monarch_cash_flow_sum_by_category.labels(
             category=name,
             group_type=group_type
         ).set(sum_amt)
+
+        cat_to_group_type[name] = group_type
+    
+    return cat_to_group_type
 
 monarch_budget_planned_income_total = Gauge('monarch_budget_planned_income', 'Planned income in budget for month', ['month'])
 monarch_budget_actual_income_total = Gauge('monarch_budget_actual_income', 'Actual income in budget for month', ['month'])
 monarch_budget_planned_expenses_total = Gauge('monarch_budget_planned_expenses_total', 'Planned expenses in budget for month', ['month'])
 monarch_budget_actual_expenses_total = Gauge('monarch_budget_actual_expenses_total', 'Actual expenses in budget for month', ['month'])
 
-monarch_budget_planned_category = Gauge('monarch_budget_planned_category', 'Planned amount for category in month', ['month', 'category', 'category_group'])
-monarch_budget_actual_category = Gauge('monarch_budget_actual_category', 'Actual amount for category in month', ['month', 'category', 'category_group'])
-monarch_budget_rollover_category = Gauge('monarch_budget_rollover_category', 'Rollover amount for category in month', ['month', 'category', 'category_group'])
+monarch_budget_planned_category = Gauge('monarch_budget_planned_category', 'Planned amount for category in month', ['month', 'category', 'category_group', 'group_type'])
+monarch_budget_actual_category = Gauge('monarch_budget_actual_category', 'Actual amount for category in month', ['month', 'category', 'category_group', 'group_type'])
+monarch_budget_rollover_category = Gauge('monarch_budget_rollover_category', 'Rollover amount for category in month', ['month', 'category', 'category_group', 'group_type'])
 
-def set_budget_metrics(outer: dict):
+def set_budget_metrics(outer: dict, cat_to_group_type: dict):
     cat_groups = {}
     cat_names = {}
     cat_to_group_name = {}
@@ -169,6 +175,7 @@ def set_budget_metrics(outer: dict):
                 month=mon.get('month'),
                 category=cat_name,
                 category_group=grp_name,
+                group_type=cat_to_group_type.get(cat_name, '')
             )
             planned_amt = mon.get('plannedCashFlowAmount', 0)
             actual_amt = mon.get('actualAmount', 0)
@@ -229,13 +236,13 @@ async def update_loop():
     set_transactions_summary_metrics(transactions_summary)
 
     cash_flow = await mm.get_cashflow()
-    set_cash_flow_metrics(cash_flow)
+    cat_to_group_type = set_cash_flow_metrics(cash_flow)
 
     cash_flow_summary = await mm.get_cashflow_summary()
     set_cash_flow_summary_metrics(cash_flow_summary)
 
     budget = await mm.get_budgets()
-    set_budget_metrics(budget)
+    set_budget_metrics(budget, cat_to_group_type)
 
     monarch_last_update_loop_at.set(arrow.get().float_timestamp)
     logger.info('Finished update_loop')
