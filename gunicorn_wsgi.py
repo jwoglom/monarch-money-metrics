@@ -13,7 +13,10 @@ class WrappedSample(samples.Sample):
         return super().__new__(cls, name, labels, value, timestamp, exemplar)
 samples.Sample = WrappedSample
 
-from app import app
+try:
+    from app import app
+except ImportError:
+    from . import app
 
 
 from prometheus_flask_exporter.multiprocess import GunicornInternalPrometheusMetrics

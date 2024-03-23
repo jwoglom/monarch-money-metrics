@@ -11,8 +11,13 @@ from monarchmoney import MonarchMoney, RequireMFAException
 
 from flask import Flask, Response, request, abort, redirect, jsonify
 from flask_apscheduler import APScheduler
+is_gunicorn = "gunicorn" in os.environ.get("SERVER_SOFTWARE", "")
 
-from prometheus_flask_exporter.multiprocess import GunicornInternalPrometheusMetrics
+if is_gunicorn:
+    from prometheus_flask_exporter.multiprocess import GunicornInternalPrometheusMetrics as PrometheusMetrics
+else:
+    from prometheus_flask_exporter import PrometheusMetrics
+
 from prometheus_client import Counter, Gauge
 
 logging.basicConfig(
@@ -28,7 +33,7 @@ class Config:
 
 app.config.from_object(Config())
 
-metrics = GunicornInternalPrometheusMetrics(app)
+metrics = PrometheusMetrics(app)
 
 monarch_logged_in = Gauge('monarch_logged_in', 'If monarch-money-metrics is logged in', [])
 monarch_needs_mfa = Gauge('monarch_needs_mfa', 'If monarch-money-metrics needs mfa', [])
