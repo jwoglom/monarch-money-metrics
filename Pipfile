@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+gunicorn = "*"
+prometheus-flask-exporter = "*"
+monarchmoney = "*"
+arrow = "*"
+flask = {extras = ["async"], version = "*"}
+
+[dev-packages]
+
+[scripts]
+"app.py" = "gunicorn --bind=0.0.0.0:8080 -c=gunicorn_wsgi.py app:app"
