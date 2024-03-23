@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3b905972c1830f69f8a1e2eda898b9795ef1ea5bb6c0f148522379765529ac54"
+            "sha256": "cdbd488c96a259c7e38b4517380799e97c94fa85681afebd60cff8708c10c764"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -111,6 +111,14 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==4.3.0"
+        },
+        "apscheduler": {
+            "hashes": [
+                "sha256:e6df071b27d9be898e486bc7940a7be50b4af2e9da7c08f0744a96d4bd4cef4a",
+                "sha256:fb91e8a768632a4756a585f79ec834e0e27aad5860bac7eaa523d9ccefd87661"
+            ],
+            "markers": "python_version >= '3.6'",
+            "version": "==3.10.4"
         },
         "arrow": {
             "hashes": [
@@ -282,6 +290,14 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==3.0.2"
+        },
+        "flask-apscheduler": {
+            "hashes": [
+                "sha256:b929846f026fb339b76360b0e4fc75da78b75c6d08625715bd0d37949bd607da"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==1.13.1"
         },
         "frozenlist": {
             "hashes": [
@@ -632,6 +648,13 @@
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==2.9.0.post0"
         },
+        "pytz": {
+            "hashes": [
+                "sha256:2a29735ea9c18baf14b448846bde5a48030ed267578472d8955cd0e7443a9812",
+                "sha256:328171f4e3623139da4983451950b28e95ac706e13f3f2630a879749e7a8b319"
+            ],
+            "version": "==2024.1"
+        },
         "requests": {
             "hashes": [
                 "sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f",
@@ -640,6 +663,15 @@
             "index": "pypi",
             "markers": "python_version >= '3.7'",
             "version": "==2.31.0"
+        },
+        "setuptools": {
+            "hashes": [
+                "sha256:0ff4183f8f42cd8fa3acea16c45205521a4ef28f73c6391d8a25e92893134f2e",
+                "sha256:c21c49fb1042386df081cb5d86759792ab89efca84cf114889191cd09aacc80c"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==69.2.0"
         },
         "six": {
             "hashes": [
@@ -664,6 +696,14 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==2.9.0.20240316"
+        },
+        "tzlocal": {
+            "hashes": [
+                "sha256:49816ef2fe65ea8ac19d19aa7a1ae0551c834303d5014c6d5a62e4cbda8047b8",
+                "sha256:8d399205578f1a9342816409cc1e46a93ebd5755e39ea2d85334bea911bf0e6e"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==5.2"
         },
         "urllib3": {
             "hashes": [

@@ -10,6 +10,8 @@ prometheus-flask-exporter = "*"
 monarchmoney = "*"
 arrow = "*"
 flask = {extras = ["async"], version = "*"}
+setuptools = "*" # required because of ImpImporter dependency of flask-apscheduler
+flask-apscheduler = "*"
 
 [dev-packages]
 
