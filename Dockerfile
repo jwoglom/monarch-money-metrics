@@ -39,4 +39,5 @@ COPY . .
 
 # Run the application
 EXPOSE 8080
-ENTRYPOINT ["gunicorn", "--bind=0.0.0.0:8080", "-c=gunicorn_wsgi.py", "app:app"]
+ENV FLASK_APP "app.py"
+ENTRYPOINT ["flask", "run", "-p8080"]
