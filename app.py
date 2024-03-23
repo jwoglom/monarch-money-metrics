@@ -122,6 +122,69 @@ def set_cash_flow_metrics(outer: dict):
             group_type=group_type
         ).set(sum_amt)
 
+monarch_budget_planned_income_total = Gauge('monarch_budget_planned_income', 'Planned income in budget for month', ['month'])
+monarch_budget_actual_income_total = Gauge('monarch_budget_actual_income', 'Actual income in budget for month', ['month'])
+monarch_budget_planned_expenses_total = Gauge('monarch_budget_planned_expenses_total', 'Planned expenses in budget for month', ['month'])
+monarch_budget_actual_expenses_total = Gauge('monarch_budget_actual_expenses_total', 'Actual expenses in budget for month', ['month'])
+
+monarch_budget_planned_category = Gauge('monarch_budget_planned_category', 'Planned amount for category in month', ['month', 'category', 'category_group'])
+monarch_budget_actual_category = Gauge('monarch_budget_actual_category', 'Actual amount for category in month', ['month', 'category', 'category_group'])
+monarch_budget_rollover_category = Gauge('monarch_budget_rollover_category', 'Rollover amount for category in month', ['month', 'category', 'category_group'])
+
+def set_budget_metrics(outer: dict):
+    cat_groups = {}
+    cat_names = {}
+    cat_to_group_name = {}
+    for cg in outer.get('categoryGroups', {}):
+        cat_groups[cg.get('id')] = cg.get('name')
+        for c in cg.get('categories', []):
+            cat_names[c.get('id')] = c.get('name')
+            cat_to_group_name[c.get('id')] = cg.get('name')
+
+    
+
+    by_mon = outer.get('budgetData').get('totalsByMonth', [])
+
+    for mon in by_mon:
+        lbl=dict(
+            month=mon.get('month')
+        )
+        planned_income = (mon.get('totalIncome') or {}).get('plannedAmount', 0)
+        actual_income = (mon.get('totalIncome') or {}).get('actualAmount', 0)
+        planned_expenses = (mon.get('totalExpenses') or {}).get('plannedAmount', 0)
+        actual_expenses = (mon.get('totalExpenses') or {}).get('actualAmount', 0)
+
+        monarch_budget_planned_income_total.labels(**lbl).set(planned_income)
+        monarch_budget_actual_income_total.labels(**lbl).set(actual_income)
+        monarch_budget_planned_expenses_total.labels(**lbl).set(planned_expenses)
+        monarch_budget_actual_expenses_total.labels(**lbl).set(actual_expenses)
+    
+    by_cat = outer.get('budgetData').get('monthlyAmountsByCategory', [])
+    for cat in by_cat:
+        cat_id = cat.get('category', {}).get('id')
+        cat_name = cat_names.get(cat_id)
+        grp_name = cat_to_group_name.get(cat_id)
+        for mon in cat.get('monthlyAmounts', []):
+            lbl=dict(
+                month=mon.get('month'),
+                category=cat_name,
+                category_group=grp_name,
+            )
+            planned_amt = mon.get('plannedCashFlowAmount', 0)
+            actual_amt = mon.get('actualAmount', 0)
+            rollover_amt = mon.get('previousMonthRolloverAmount', 0)
+
+            if not planned_amt and not actual_amt:
+                continue
+
+            monarch_budget_planned_category.labels(**lbl).set(planned_amt)
+            monarch_budget_actual_category.labels(**lbl).set(actual_amt)
+
+            if rollover_amt:
+                monarch_budget_rollover_category.labels(**lbl).set(rollover_amt)
+
+
+
 mm = MonarchMoney()
 MONARCH_SESSION_FILE = os.getenv('MONARCH_SESSION_FILE', '')
 if MONARCH_SESSION_FILE:
@@ -165,11 +228,14 @@ async def update_loop():
     transactions_summary = await mm.get_transactions_summary()
     set_transactions_summary_metrics(transactions_summary)
 
-    cash_flow = await mm.get_cashflow_summary()
-    set_cash_flow_summary_metrics(cash_flow)
+    cash_flow = await mm.get_cashflow()
+    set_cash_flow_metrics(cash_flow)
 
     cash_flow_summary = await mm.get_cashflow_summary()
     set_cash_flow_summary_metrics(cash_flow_summary)
+
+    budget = await mm.get_budgets()
+    set_budget_metrics(budget)
 
     monarch_last_update_loop_at.set(arrow.get().float_timestamp)
     logger.info('Finished update_loop')
@@ -187,6 +253,7 @@ def scheduler_update_loop():
 
 
 scheduler.start()
+asyncio.run(update_loop())
 
 @app.route('/')
 def index():
