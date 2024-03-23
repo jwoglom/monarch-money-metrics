@@ -39,5 +39,5 @@ COPY . .
 
 # Run the application
 EXPOSE 8080
-ENV FLASK_APP "app.py"
+ENV FLASK_APP="app.py"
 ENTRYPOINT ["flask", "run", "-p8080"]
